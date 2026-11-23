@@ -651,6 +651,17 @@ jobs:
             "${CONFIG_ARGS[@]}" \
             olddefconfig
 
+          # OPPO-specific drivers (panels etc.) get enabled by Kconfig defaults
+          # but call tp_control_* symbols that live in the (disabled) OPPO TP
+          # framework -> link failure. Huawei uses its own panels/TP, so strip
+          # every OPPO-only config, then re-run olddefconfig to settle deps.
+          sed -i -E 's/^(CONFIG_(DRM_PANEL_OPLUS[A-Z0-9_]*|TOUCHPANEL_[A-Z0-9_]*|OPLUS_TP[A-Z0-9_]*|OPLUS_FEATURE_[A-Z0-9_]*))=.*/# \1 is not set/' out/.config
+          make O=out ARCH=arm64 \
+            "${CONFIG_ARGS[@]}" \
+            olddefconfig
+          echo '===== OPPO leftovers check ====='
+          grep -E '^CONFIG_(DRM_PANEL_OPLUS|TOUCHPANEL|OPLUS_TP|OPLUS_FEATURE)' out/.config || echo 'none left (good)'
+
           # 配置校验
           echo "===== KSU/SUSFS 配置校验 ====="
           grep -E 'CONFIG_KSU|CONFIG_KSU_MANUAL_HOOK|CONFIG_KSU_SUSFS|CONFIG_KSU_TRACEPOINT_HOOK|CONFIG_KSU_SUSFS_SUS_SU' out/.config || true
