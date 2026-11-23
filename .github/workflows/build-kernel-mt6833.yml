@@ -1,4 +1,4 @@
-name: Build Kernel for PFGM00-MT6833
+name: Build Kernel for k6833v1_64-HW-MT6833
 
 on:
   workflow_dispatch:
@@ -140,9 +140,9 @@ jobs:
           # ========= 4. 生成 matrix（SUSFS 仅挂 bakasu） =========
           MATRIX=$(for root in $(echo "$ROOTS" | jq -r '.[]'); do
             case "$root" in
-              bakasu)        NAME="PFGM00-MT6833-BakaSU" ;;
-              kernelsu_next) NAME="PFGM00-MT6833-KernelSU-Next" ;;
-              *)             NAME="PFGM00-MT6833-RKSU" ;;
+              bakasu)        NAME="k6833v1_64-HW-MT6833-BakaSU" ;;
+              kernelsu_next) NAME="k6833v1_64-HW-MT6833-KernelSU-Next" ;;
+              *)             NAME="k6833v1_64-HW-MT6833-RKSU" ;;
             esac
             NAME="${NAME}${FUNC_SUFFIX}"
             if [ "$root" = "bakasu" ] && [ "$SUSFS_EFFECTIVE" = "true" ]; then
@@ -407,11 +407,11 @@ jobs:
 
           wget https://github.com/wu17481748/android-lxc-docker/releases/download/lxc-docker-2config/LXC-DOCKER-OPEN-CONFIG.sh
           chmod +x LXC-DOCKER-OPEN-CONFIG.sh
-          ./LXC-DOCKER-OPEN-CONFIG.sh android-kernel/arch/arm64/configs/PFGM00_defconfig -w
+          ./LXC-DOCKER-OPEN-CONFIG.sh android-kernel/arch/arm64/configs/k6833v1_64_ab_defconfig -w
 
           cd android-kernel
-          sed -i '/CONFIG_MTK_TASK_TURBO/d' arch/arm64/configs/PFGM00_defconfig
-          echo "# CONFIG_MTK_TASK_TURBO is not set" >> arch/arm64/configs/PFGM00_defconfig
+          sed -i '/CONFIG_MTK_TASK_TURBO/d' arch/arm64/configs/k6833v1_64_ab_defconfig
+          echo "# CONFIG_MTK_TASK_TURBO is not set" >> arch/arm64/configs/k6833v1_64_ab_defconfig
 
           cd $GITHUB_WORKSPACE/kernel_workspace
           wget https://raw.githubusercontent.com/tomxi1997/lxc-docker-support-for-android/refs/heads/main/runcpatch.sh
@@ -428,8 +428,8 @@ jobs:
             patch -p0 < xt_qtaguid.patch || { echo "xt_qtaguid patch 失败"; exit 1; }
           fi
 
-          sed -i '/CONFIG_ANDROID_PARANOID_NETWORK/d' android-kernel/arch/arm64/configs/PFGM00_defconfig
-          echo "# CONFIG_ANDROID_PARANOID_NETWORK is not set" >> android-kernel/arch/arm64/configs/PFGM00_defconfig
+          sed -i '/CONFIG_ANDROID_PARANOID_NETWORK/d' android-kernel/arch/arm64/configs/k6833v1_64_ab_defconfig
+          echo "# CONFIG_ANDROID_PARANOID_NETWORK is not set" >> android-kernel/arch/arm64/configs/k6833v1_64_ab_defconfig
       # ================================
 
       - name: 配置 defconfig
@@ -466,7 +466,7 @@ jobs:
 
           # ========== Deprecated: KVM ==========
           if [ "$ENABLE_KVM" = "true" ]; then
-            cat >> arch/arm64/configs/PFGM00_defconfig <<'EOF'
+            cat >> arch/arm64/configs/k6833v1_64_ab_defconfig <<'EOF'
           CONFIG_VIRTUALIZATION=y
           CONFIG_KVM=y
           CONFIG_VHOST_NET=y
@@ -477,7 +477,7 @@ jobs:
 
           make -j$(nproc --all) O=out ARCH=arm64 \
             "${CONFIG_ARGS[@]}" \
-            PFGM00_defconfig
+            k6833v1_64_ab_defconfig
 
           # BBR
           if [ "$ENABLE_BBR" = "true" ]; then
@@ -853,7 +853,7 @@ jobs:
             echo "|------|-----|"
             echo "| **Commit SHA** | ${{ github.sha }} |"
             echo "| **Action Run Number** | ${{ github.run_number }} |"
-            echo "| **Action Name** | Build Kernel for PFGM00-MT6833 |"
+            echo "| **Action Name** | Build Kernel for k6833v1_64-HW-MT6833 |"
           } > summary.md
           cat summary.md >> $GITHUB_STEP_SUMMARY
           {
