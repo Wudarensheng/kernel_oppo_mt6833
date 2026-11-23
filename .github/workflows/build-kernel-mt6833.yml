@@ -629,6 +629,23 @@ jobs:
               --enable CONFIG_SECTION_MISMATCH_WARN_ONLY
           fi
 
+          # Huawei k6833v1_64 uses CHIPONE/OMNIVISION touchpanel, not the OPPO
+          # TOUCHPANEL_* framework. Disable it: OPPO TP drivers reference
+          # OPPO-only macros (HEALTH_FW_UPDATE etc.) and fail to build under
+          # the Huawei defconfig (first build failure root cause).
+          ./scripts/config --file out/.config \
+            --disable CONFIG_TOUCHPANEL_OPLUS \
+            --disable CONFIG_TOUCHPANEL_HIMAX \
+            --disable CONFIG_TOUCHPANEL_SYNAPTICS \
+            --disable CONFIG_TOUCHPANEL_FOCAL \
+            --disable CONFIG_TOUCHPANEL_GOODIX \
+            --disable CONFIG_TOUCHPANEL_NOVA \
+            --disable CONFIG_TOUCHPANEL_SAMSUNG \
+            --disable CONFIG_TOUCHPANEL_ILITEK \
+            --disable CONFIG_TOUCHPANEL_CHIPONE \
+            --disable CONFIG_OPLUS_TP_APK \
+            --disable CONFIG_TOUCHIRQ_UPDATE_QOS
+
           # olddefconfig：沿用 CONFIG_ARGS，仍不传 CROSS_COMPILE
           make O=out ARCH=arm64 \
             "${CONFIG_ARGS[@]}" \
